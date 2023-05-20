@@ -45,6 +45,17 @@ function initializeServiceWorker() {
   // We first must register our ServiceWorker here before any of the code in
   // sw.js is executed.
   // B1. TODO - Check if 'serviceWorker' is supported in the current browser
+  if ("serviceWorker" in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+      if (navigator.serviceWorker.controller) {
+        console.log('Service Worker Succesfully Registered');
+      } else {
+        console.log('Service Worker Failed to Register');
+      }
+    });
+  }
+  console.log(navigator);
   // B2. TODO - Listen for the 'load' event on the window object.
   // Steps B3-B6 will be *inside* the event listener's function created in B2
   // B3. TODO - Register './sw.js' as a service worker (The MDN article
@@ -66,12 +77,20 @@ function initializeServiceWorker() {
  */
 async function getRecipes() {
   // EXPOSE - START (All expose numbers start with A)
+
   // A1. TODO - Check local storage to see if there are any recipes.
   //            If there are recipes, return them.
+  const recipes = localStorage.getItem('recipes');
+  if (recipes) {
+    return JSON.parse(recipes);
+  }
+
+
   /**************************/
   // The rest of this method will be concerned with requesting the recipes
   // from the network
   // A2. TODO - Create an empty array to hold the recipes that you will fetch
+  const recipeContainer = [];
   // A3. TODO - Return a new Promise. If you are unfamiliar with promises, MDN
   //            has a great article on them. A promise takes one parameter - A
   //            function (we call these callback functions). That function will
@@ -100,6 +119,25 @@ async function getRecipes() {
   //            resolve() method.
   // A10. TODO - Log any errors from catch using console.error
   // A11. TODO - Pass any errors to the Promise's reject() function
+  return new Promise(async (resolve, reject) => {
+    try {
+      for (const element of RECIPE_URLS) {
+        const currRecipe = await fetch(element);
+        const url = await currRecipe.json();
+        recipeContainer.push(url);
+        if (recipeContainer.length === RECIPE_URLS.length) {
+          saveRecipesToStorage(recipeContainer);
+          resolve(recipeContainer);
+        }
+      }
+
+    }
+    catch (error) {
+      console.error(error);
+      reject(error);
+    }
+
+  });
 }
 
 /**
