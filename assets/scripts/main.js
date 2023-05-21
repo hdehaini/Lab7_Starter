@@ -47,15 +47,16 @@ function initializeServiceWorker() {
   // B1. TODO - Check if 'serviceWorker' is supported in the current browser
   if ("serviceWorker" in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js');
-      if (navigator.serviceWorker.controller) {
-        console.log('Service Worker Succesfully Registered');
-      } else {
+      try {
+        const register = navigator.serviceWorker.register('./sw.js');
+        if (register) {
+          console.log('Service Worker Succesfully Registered');
+        }
+      } catch (error) {
         console.log('Service Worker Failed to Register');
       }
     });
   }
-  console.log(navigator);
   // B2. TODO - Listen for the 'load' event on the window object.
   // Steps B3-B6 will be *inside* the event listener's function created in B2
   // B3. TODO - Register './sw.js' as a service worker (The MDN article
@@ -120,8 +121,8 @@ async function getRecipes() {
   // A10. TODO - Log any errors from catch using console.error
   // A11. TODO - Pass any errors to the Promise's reject() function
   return new Promise(async (resolve, reject) => {
-    try {
-      for (const element of RECIPE_URLS) {
+    for (const element of RECIPE_URLS) {
+      try {
         const currRecipe = await fetch(element);
         const url = await currRecipe.json();
         recipeContainer.push(url);
@@ -131,12 +132,12 @@ async function getRecipes() {
         }
       }
 
-    }
-    catch (error) {
-      console.error(error);
-      reject(error);
-    }
 
+      catch (error) {
+        console.error(error);
+        reject(error);
+      }
+    }
   });
 }
 
